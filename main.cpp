@@ -10,9 +10,6 @@ bool mouseLeftDown = false;
 Camera *camera;
 Model *model;
 
-// bool firstMouse = true;
-// bool mouseLeftDown = false;
-
 float deltaTime = 0.0f;
 
 void drawModel();
