@@ -31,15 +31,15 @@ public:
     float calculateIntensity(vec4f, vec4f, vec4f);
     void phongIlluminationModel(Triangle &);
     void gauravShading(Triangle &);
-    bool gauravShade = true;
+    bool gouraudShade = true;
 
     Camera *camera;
 };
 
 void Model::draw()
 {
-    // drawWireframe_model(final_triangles);
-    draw_model(final_triangles, gauravShade);
+     //drawWireframe_model(final_triangles);
+    draw_model(final_triangles, gouraudShade);
 }
 
 void Model::load(std::string filename)
@@ -350,7 +350,7 @@ void Model::phongIlluminationModel(Triangle &tri)
     // std::cout << centroid[0] <<"\t";
 
    // vec4f view = (camera->m_pos - centroid).normalize();
-     vec4f view = (vec4f{0,0,1000} - centroid).normalize();
+     vec4f view = (vec4f{0,0,100} - centroid).normalize();
 
     // generating the normal vector of a triangle
     vec4f ver1 = centroid - v2;
@@ -365,16 +365,5 @@ void Model::phongIlluminationModel(Triangle &tri)
     tri.color = newColor;
 }
 
-void Model::gauravShading(Triangle &tri)
-{
-    std::vector<float>intensity(3);
-    int count = 0;
-    for (auto &vertex : tri.vertices)
-    {
-        vec4f view = (vec4f{0, 0, 10} - vertex).normalize();
-        intensity[count] = calculateIntensity(vertex, tri.normals[count], view);
-        count++;
-    }
-    tri.setIntensity(intensity);
-}
+
     
