@@ -16,27 +16,13 @@ Model *model;
 float deltaTime = 0.0f;
 
 void drawModel();
-void draw_polygon(vec4f polygon[n], Color color);
-void Face(vec4f A, vec4f B, vec4f C, vec4f D);
 void processKeys(unsigned char key, float x, float y);
 void processMouse(int xpos, int ypos);
 void updateFunction(int val);
 
 void processKeys(unsigned char key, int x, int y)
 {
-    // switch (key)
-    // {
-    // case 27:
-    //     glutDestroyWindow(0);
-    //     exit(0);
-    // case 120:
-    //     theta_x += wrap_angle(deltaTime * dTheta * dt);
-    // case 121:
-    //     theta_y += wrap_angle(deltaTime * dTheta * dt);
-    // case 122:
-    //     theta_z += wrap_angle(deltaTime * dTheta * dt);
 
-    // }
     std::cout << "Key Pressed" << std::endl;
 
     if (key == 27)
@@ -61,13 +47,6 @@ void processKeys(unsigned char key, int x, int y)
 
 void mouseCB(int button, int state, int xpos, int ypos)
 {
-    // // std::cout << xpos << "\t" << ypos << "\n";
-    // if (firstMouse == true)
-    // {
-    //     lastX = xpos;
-    //     lastY = ypos;
-    //     firstMouse = false;
-    // }
     if ((button == GLUT_LEFT_BUTTON))
     {
         if (state == GLUT_DOWN)
@@ -123,17 +102,15 @@ void myinit(int argc, char **argv)
     glutInit(&argc, argv);
     glutInitWindowSize(SCR_WIDTH, SCR_HEIGHT); //sets the width and height of the window in pixels
     glutInitWindowPosition(0, 0);              //sets the position of the window in pixels from top left corner
-    // glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); //creates a single frame buffer of RGB color capacity.
     glutCreateWindow("Taj Mahal");
 
     glClearColor(0.1, 0.1, 0.1, 0.0);
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-    // glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, SCR_WIDTH, 0, SCR_HEIGHT);
 
-    // glutPostRedisplay();
 }
+
 
 void draw_model()
 {

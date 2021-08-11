@@ -6,9 +6,9 @@
 
 // #include "structure.h"
 #include "camera.h"
-#include "transformations.h"
-#include "matrix.h"
-#include "drawTriangle.h"
+#include "3dtransformations.h"
+#include "modeltransformation.h"
+#include "triangleRasterize.h"
 
 void painterSort(std::vector<Triangle> &tri, float low, float high); // Quick sort algo
 

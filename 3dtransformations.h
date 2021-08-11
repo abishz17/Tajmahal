@@ -1,6 +1,6 @@
 #pragma once
 
-#include "structure.h"
+#include "vector.h"
 
 //transformation functions
 void transate_polygon(vec4f &pt, vec4f translate);

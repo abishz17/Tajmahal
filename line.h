@@ -1,6 +1,6 @@
 #pragma once
 
-#include "structure.h"
+#include "vector.h"
 #include "colors.h"
 
 //line algorithm

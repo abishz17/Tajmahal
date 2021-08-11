@@ -1,6 +1,6 @@
 #pragma once
 
-#include "structure.h"
+#include "vector.h"
 // #include "drawingTools.h"
 
 mat4f Matrix_MakeRotationX(float fAngleRad);
@@ -61,25 +61,14 @@ mat4f newPerspective(float fov, float aspect)
                          {0, 0, (zFar + zNear) / zRange, (2 * zFar * zNear) / zRange},
                          {0, 0, -1, 0}}};
 
-    // mat4f projection = {{
-    //     {1/(aspect*tan(fov/2)),0,0,0},
-    //     {0,1/tan(fov/2),0,0},
-    //     {0,0,(zFar+zNear)/zRange,-1},
-    //     {0,0,(2*zFar*zNear)/zRange,0}
-    //     }};
+   
     return projection;
 
-    // mat4f projection = {{{1 / (aspect * tan(fov / 2)), 0, 0, 0},
-    //                      {0, 1 / tan(fov / 2), 0, 0},
-    //                      {0, 0, -(zFar + zNear) / (zFar - zNear), -1},
-    //                      {0, 0, -(2 * zFar * zNear) / (zFar - zNear), 0}}};
-
-    return projection;
 }
 
 mat4f rotateMatrix(float yaw, float pitch = 0, float roll = 0)
 {
-    // std::cout << "Hello";
+    
     mat4f rotation = {{{cos(yaw) * cos(pitch), cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll), cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll), 0},
                        {sin(yaw) * cos(pitch), sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll), sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll), 0},
                        {-sin(pitch), cos(pitch) * sin(roll), cos(pitch) * cos(roll), 0},
