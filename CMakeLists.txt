@@ -13,7 +13,7 @@ set(files "main.cpp")
 
 set(includes "colors.h" "projection.h" "model.h"
              "3dtransformations.h" "camera.h" "modeltransformation.h"
-			 "line.h" "triangleRasterize.h" "vector.h"
+			 "line.h" "triangleRasterize.h" "vector.h" "interpolate.h"
 			  )
 
 #actual execution of project

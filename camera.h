@@ -1,6 +1,8 @@
 #pragma once
 
 #include "vector.h"
+#include "model.h"
+
 
 enum CameraMovement
 {
@@ -9,7 +11,13 @@ enum CameraMovement
     LEFT,
     RIGHT,
     ZOOMIN,
-    ZOOMOUT
+    ZOOMOUT,
+    WIRE,
+    PLAIN,
+    GOURAUD,
+    ROTATEX,
+    ROTATEY,
+    ROTATEZ,
 };
 
 // Default camera values
@@ -18,6 +26,10 @@ const float PITCH = 0.0f;
 const float SPEED = 100.0f;
 const float SENSITIVITY = 0.02f;
 const float ZOOM = 20.0f;
+bool wireframe = false;
+bool plainshade = false;
+bool gouraudshade = false;
+bool rotatex = false;
 
 mat4f lookAt(vec4f eye, vec4f target, vec4f vUp);
 
@@ -39,6 +51,7 @@ public:
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
+    
 
     Camera(vec4f position = vec4f{0, 0, 0}, vec4f up = vec4f{0, 1, 0}, float yaw = YAW, float pitch = PITCH);
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
@@ -54,7 +67,6 @@ public:
 
 Camera::Camera(vec4f position, vec4f up, float yaw, float pitch) : Front(vec4f{0, 0, -1}), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 {
-    std::cout << "Hello Camera 1\n";
     Position = position;
     WorldUp = up;
     Yaw = yaw;
@@ -110,7 +122,41 @@ void Camera::processKeyboard(CameraMovement direction, float deltaTime)
             Zoom = 5.0f;
         if (Zoom > 45.0f)
             Zoom = 45.0f;
+
+        
     }
+
+
+    if (direction == WIRE)
+    {
+        wireframe = true;
+        plainshade = false;
+        gouraudshade =false;
+
+        
+    }
+
+    if (direction == PLAIN )
+    {
+        plainshade = true;
+        wireframe = false;
+        gouraudshade  = false;
+        
+    }
+
+    if (direction == GOURAUD)
+    {
+        gouraudshade = true;
+        wireframe = false;
+        plainshade = false;
+    }
+
+    // if (direction == ROTATEX)
+    // {
+    //     model->rotate(45);
+    // }
+
+
 }
 
 void Camera::processMouseMovement(float xoffset, float yoffset, bool constrainPitch /*= true*/)

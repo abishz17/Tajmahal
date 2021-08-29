@@ -3,14 +3,14 @@
 #include<fstream>
 #include<sstream>
 #include<algorithm>
-
-// #include "structure.h"
 #include "camera.h"
 #include "3dtransformations.h"
 #include "modeltransformation.h"
 #include "triangleRasterize.h"
 
-void painterSort(std::vector<Triangle> &tri, float low, float high); // Quick sort algo
+
+//sorting function to check depth
+void painterSort(std::vector<Triangle> &tri, float low, float high); 
 
 class Model
 {
@@ -19,69 +19,31 @@ private:
     std::vector<Triangle> final_triangles;
 
 public:
-    void load(std::string);
-    void newLoad(std::string);
-    void convertToScreen_model();
-    void rotate_model(float);
-    void translate_model(vec4f);
-    void scale_model(float);
+    void loadObj(std::string);
+    void originConversion();
+    void rotate(float);
+    void translate(vec4f);
+    void scale(float);
     void updateModel(mat4f &, mat4f &);
-    bool backfaceDetectionNormalize(Triangle &tri);
+    bool backfaceDetection(Triangle &tri);
     void draw();
     float calculateIntensity(vec4f, vec4f, vec4f);
-    void phongIlluminationModel(Triangle &);
-    void gauravShading(Triangle &);
-    bool gouraudShade = true;
 
     Camera *camera;
 };
 
 void Model::draw()
-{
-     //drawWireframe_model(final_triangles);
-    draw_model(final_triangles, gouraudShade);
+{   
+     drawObject(final_triangles);
+    if(wireframe){
+     drawWireframeObject(final_triangles);
+     }
+
+    
 }
 
-void Model::load(std::string filename)
-{
-    std::ifstream file;
-    file.open(filename);
-    if (file.fail())
-    {
-        std::cout << "File cannot be opened \n";
-        exit(-1);
-    }
-    // Local cache of verts
-    std::vector<vec4f> verts;
 
-    while (!file.eof())
-    {
-        char line[128];
-        file.getline(line, 128);
-
-        std::stringstream s;
-        s << line;
-
-        char junk;
-
-        if (line[0] == 'v')
-        {
-            vec4f v;
-            s >> junk >> v.x >> v.y >> v.z;
-            verts.push_back(v);
-        }
-
-        if (line[0] == 'f')
-        {
-            int f[3];
-            s >> junk >> f[0] >> f[1] >> f[2];
-            triangles.push_back(Triangle{verts[f[0] - 1], verts[f[1] - 1], verts[f[2] - 1]});
-        }
-    }
-    final_triangles = triangles;
-}
-
-void Model::newLoad(std::string filename)
+void Model::loadObj(std::string filename)
 {
     std::ifstream in;
     in.open(filename, std::ifstream::in);
@@ -93,7 +55,7 @@ void Model::newLoad(std::string filename)
     std::string line;
     std::vector<vec4f> verts;
     std::vector<vec4f> normals;
-    std::vector<Point2> textures;
+    std::vector<vec2f> textures;
 
     int count = 1;
     while (!in.eof())
@@ -121,7 +83,7 @@ void Model::newLoad(std::string filename)
         else if (!line.compare(0, 3, "vt ")) //starts with vt<space>
         {
             iss >> trash >> trash; //Ignore vt
-            Point2 uv;
+            vec2f uv;
             iss >> uv.x;
             iss >> uv.y;
             textures.push_back(uv);
@@ -167,18 +129,18 @@ void Model::newLoad(std::string filename)
     final_triangles = triangles;
 }
 
-void Model::convertToScreen_model()
+void Model::originConversion()
 {
     for (int i = 0; i < triangles.size(); i++)
     {
         for (int j = 0; j < 3; j++)
         {
-            triangles[i].vertices[j] = triangles[i].vertices[j].Convert_to_Screen();
+            triangles[i].vertices[j] = triangles[i].vertices[j].translatetoScreenOrigin();
         }
     }
 }
 
-void Model::translate_model(vec4f pt)
+void Model::translate(vec4f pt)
 {
     for (int i = 0; i < triangles.size(); i++)
         {
@@ -189,7 +151,7 @@ void Model::translate_model(vec4f pt)
         }
 }
 
-void Model::scale_model(float pt)
+void Model::scale(float pt)
 {
     for (int i = 0; i < triangles.size(); i++)
     {
@@ -200,7 +162,7 @@ void Model::scale_model(float pt)
     }
 }
 
-void Model::rotate_model(float angle)
+void Model::rotate(float angle)
 {
     for (int i = 0; i < triangles.size(); i++)
     {
@@ -216,8 +178,6 @@ void Model::rotate_model(float angle)
 void Model::updateModel(mat4f &view, mat4f &projection)
 {
     final_triangles.clear();
-     //final_triangles = triangles;
-    int cullCount = 0;
 
     for (auto &tri : triangles)
     {
@@ -225,13 +185,12 @@ void Model::updateModel(mat4f &view, mat4f &projection)
         temptri.vertices[0] = mul(view, tri.vertices[0]);
         temptri.vertices[1] = mul(view, tri.vertices[1]);
         temptri.vertices[2] = mul(view, tri.vertices[2]);
-        bool culled = backfaceDetectionNormalize(temptri);
-        if(culled)  
-            cullCount++;
+        bool backface = backfaceDetection(temptri);
+        if(!backface)  
+            continue;
     }
 
-    //------------------- painters algorithm    ---------------------------
-     painterSort(final_triangles, 0, final_triangles.size());
+
 
     sort(final_triangles.begin(), final_triangles.end(), [](Triangle &t1, Triangle &t2)
          {
@@ -251,7 +210,7 @@ void Model::updateModel(mat4f &view, mat4f &projection)
     }
 }
 
-bool Model::backfaceDetectionNormalize(Triangle &tri)
+bool Model::backfaceDetection(Triangle &tri)
 {
     vec4f v1 = tri.vertices[0], v2 = tri.vertices[1], v3 = tri.vertices[2];
     vec4f centroid;
@@ -260,22 +219,21 @@ bool Model::backfaceDetectionNormalize(Triangle &tri)
     centroid.z = (v1.z + v2.z + v3.z) / 3;
 
     vec4f V = (camera->Position - centroid).normalize();
-    // vec4f V = (vec4f{0,0,100} - centroid).normalize();
+
 
     v2 = v2 - v1;
     v3 = v3 - v1;
 
     vec4f normal = v2.crossProduct(v3);
     normal = normal.normalize();
-    // std::cout<<normal;
 
-    // float value = dotProduct(normal, V);
-    // if(value<0)
-    // {
-    //     final_triangles.push_back(tri);
-    //     return false;    
-    // }
-     final_triangles.push_back(tri);
+    float product = dotProduct(normal, V);
+    if(product<0)
+    {
+        final_triangles.push_back(tri);
+        return false;    
+    }
+    final_triangles.push_back(tri);
     return true;
 }
 
@@ -309,61 +267,7 @@ void painterSort(std::vector<Triangle>&tri, float low, float high)  // Quick sor
 
 }
 
-float Model::calculateIntensity(vec4f point, vec4f Normal, vec4f View)
-{
-    float i = 0.0;
-    vec4f position = {500, 600, -200};
-    vec4f Ldir = (position - point).normalize();
-    // std::cout << point.x << "\t" << point.y << "\t" << point.z << "\n";
-    float ambientInt = 0.9;
-    float pointInt = 0.5;
 
-    float ambientConstant = 1;
-    float diffuseConstant = 0.7;
-    float specularConstant = 0.8;
-
-    float ambientLight = ambientConstant * ambientInt;
-
-    float diffuseLight = std::max(0.0f,diffuseConstant * pointInt * dotProduct(Normal, Ldir));
-
-    // vec4f R = maths::sub(maths::mul(Normal, (2 * maths::dot(Normal, Ldir))), Ldir);
-    vec4f R = ((Normal * (2 * dotProduct(Normal, Ldir))) - Ldir).normalize();
-    float specularExp = 32;
-    float specularLight = specularConstant * pointInt * pow(dotProduct(R, View), specularExp);
-
-    float tmp = ambientLight + specularLight + diffuseLight;
-    tmp = tmp > 1 ? 1 : tmp;
-    return tmp;
-}
-
-void Model::phongIlluminationModel(Triangle &tri)
-{
-    vec4f v1 = tri.vertices[0];
-    vec4f v2 = tri.vertices[1];
-    vec4f v3 = tri.vertices[2];
-
-    vec4f centroid;
-    centroid.x = (v1.x + v2.x + v3.x) / 3;
-    centroid.y = (v1.y + v2.y + v3.y) / 3;
-    centroid.z = (v1.z + v2.z + v3.z) / 3;
-
-    // std::cout << centroid[0] <<"\t";
-
-   // vec4f view = (camera->m_pos - centroid).normalize();
-     vec4f view = (vec4f{0,0,100} - centroid).normalize();
-
-    // generating the normal vector of a triangle
-    vec4f ver1 = centroid - v2;
-    vec4f ver2 = centroid - v3;
-
-    vec4f normal = (ver1.crossProduct(ver2)).normalize();
-
-    float intensity = calculateIntensity(centroid, normal, view);
-    // std::cout << "The intensity: " << intensity << "\n";
-    Color newColor = tri.color * intensity;
-
-    tri.color = newColor;
-}
 
 
     

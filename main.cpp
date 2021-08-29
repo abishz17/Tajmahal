@@ -1,8 +1,5 @@
 
-#include <experimental/filesystem>
 #include "model.h"
-
-
 float lastX = 800;
 float lastY = 500;
 bool mouseLeftDown = false;
@@ -11,16 +8,58 @@ Camera *camera;
 Model *model;
 
 float deltaTime = 0.0f;
-
-void drawModel();
 void processKeys(unsigned char key, float x, float y);
 void processMouse(int xpos, int ypos);
 void updateFunction(int val);
 
+
+
+
+
+void myinit(int argc, char **argv)
+{
+    glutInit(&argc, argv);
+    glutInitWindowSize(SCR_WIDTH, SCR_HEIGHT); //sets the width and height of the window in pixels
+    glutInitWindowPosition(0, 0);              //sets the position of the window in pixels from top left corner
+    glutCreateWindow("Taj Mahal");
+
+    glClearColor(0.1, 0.1, 0.1, 0.0);
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glLoadIdentity();
+    gluOrtho2D(0, SCR_WIDTH, 0, SCR_HEIGHT);
+
+}
+
+
+void render()
+{
+    static float lastFrame = 0;
+    float currentFrame = glutGet(GLUT_ELAPSED_TIME);
+    deltaTime = (currentFrame - lastFrame) / 1000;
+    lastFrame = currentFrame;
+
+    glClear(GL_COLOR_BUFFER_BIT);
+    mat4f view = camera->getViewMatrix();
+    mat4f projection = newPerspective(deg_to_rad(camera->Zoom), (float)SCR_WIDTH/ SCR_HEIGHT);
+    model->updateModel(view, projection);
+    model->draw();
+    glutSwapBuffers();
+    glFlush(); 
+    updateFunction(0);
+
+}
+
+void updateFunction(int val)
+{
+    int fps = 200;
+    glutPostRedisplay();
+    glutTimerFunc(1000 / fps, updateFunction, 0);
+}
+
+
 void processKeys(unsigned char key, int x, int y)
 {
 
-    std::cout << "Key Pressed" << std::endl;
 
     if (key == 27)
     {
@@ -39,6 +78,23 @@ void processKeys(unsigned char key, int x, int y)
         camera->processKeyboard(ZOOMIN, deltaTime);
     if (key == 'x')
         camera->processKeyboard(ZOOMOUT, deltaTime);
+     if (key == 'q')
+        camera->processKeyboard(WIRE, deltaTime); //wireframe mode on
+
+    if (key == 'y')
+        camera->processKeyboard(PLAIN, deltaTime); //flatshading on
+
+    if (key == 'f')
+        camera->processKeyboard(GOURAUD, deltaTime); //gouraudshading on
+
+     if (key == 'p')
+        camera->processKeyboard(ROTATEX, deltaTime);
+
+     if (key == 'o')
+        camera->processKeyboard(ROTATEY, deltaTime);
+
+    if (key == 'i')
+        camera->processKeyboard(ROTATEZ, deltaTime);
     glutPostRedisplay();
 }
 
@@ -74,8 +130,6 @@ void processMouse(int xpos, int ypos)
     static float lastX = 0;
     static float lastY = 0;
     static bool firstMouse = true;
-
-    std::cout<<"Mouse Clicked"<<std::endl;
     if (firstMouse)
     {
         lastX = xpos;
@@ -92,73 +146,21 @@ void processMouse(int xpos, int ypos)
     camera->processMouseMovement(xoffset, yoffset);
 }
 
-
-
-void myinit(int argc, char **argv)
-{
-    glutInit(&argc, argv);
-    glutInitWindowSize(SCR_WIDTH, SCR_HEIGHT); //sets the width and height of the window in pixels
-    glutInitWindowPosition(0, 0);              //sets the position of the window in pixels from top left corner
-    glutCreateWindow("Taj Mahal");
-
-    glClearColor(0.1, 0.1, 0.1, 0.0);
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-    glLoadIdentity();
-    gluOrtho2D(0, SCR_WIDTH, 0, SCR_HEIGHT);
-
-}
-
-
-void draw_model()
-{
-    static float lastFrame = 0;
-    float currentFrame = glutGet(GLUT_ELAPSED_TIME);
-    deltaTime = (currentFrame - lastFrame) / 1000;
-    lastFrame = currentFrame;
-
-    glClear(GL_COLOR_BUFFER_BIT);
-    mat4f view = camera->getViewMatrix();
-    mat4f projection = newPerspective(deg_to_rad(camera->Zoom), (float)SCR_WIDTH / SCR_HEIGHT);
-    model->updateModel(view, projection);
-    model->draw();
-
-    //-------------- always put this here----------------------------
-    glutSwapBuffers();
-    glFlush(); // flushes the frame buffer to the screen
-
-  //  glutPostRedisplay();
-    updateFunction(0);
-
-}
-
-void updateFunction(int val)
-{
-    int fps = 60;
-    glutPostRedisplay();
-    glutTimerFunc(1000 / fps, updateFunction, 0);
-}
-
 int main(int argc, char **argv)
 {
     myinit(argc, argv);
-
-    std::cout << "Working directory: " << std::experimental::filesystem::current_path() << std::endl;
-
     camera = new Camera(vec4f{0.0f,0.0f,1.0f});
     model = new Model;
-    model->newLoad("../objfiles/a1.obj");
+    model->loadObj("../objfiles/a1.obj");
 
     model->camera = camera;
-    model->convertToScreen_model();
-    model->scale_model(0.2);
-    //model->translate_model({SCR_WIDTH / 2, SCR_HEIGHT/2, 0});-
+    model->originConversion();
+    model->scale(0.2);
+    model->translate({80,0,0});
 
-    glutDisplayFunc(draw_model);
+    glutDisplayFunc(render);
     glutKeyboardFunc(processKeys);
     glutMotionFunc(processMouse);
-
-    // glutMouseFunc(mouseCB);
-    // glutMotionFunc(mouseMotionCB);
 
     glutMainLoop(); //loops the current event
 }

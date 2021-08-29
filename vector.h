@@ -31,17 +31,7 @@ float rad_to_deg(float radian)
     return (180 * radian) / 3.1416;
 }
 
-template <typename T>
-inline T wrap_angle(T theta)
-{
-    if (theta >= 360)
-        theta = 0;
-    return theta;
-    // const T modded = fmod(theta, (T)2.0 * (T)M_PI);
-    // return (modded > (T)M_PI) ? (modded - (T)2.0 * (T)M_PI) : modded;
-}
-
-struct Point2
+struct vec2f
 {  
     float x, y;
 };
@@ -61,7 +51,7 @@ struct vec4f
 
     // vec4f() : x(0.0),y(0.0),z(0.0),w(1.0){}
 
-    vec4f Convert_to_Screen()
+    vec4f translatetoScreenOrigin()
     {
         x = (x + 1.0f) * xfactor;
         y = (y + 1.0f) * yfactor;
@@ -133,7 +123,7 @@ float dotProduct(vec4f pt1, vec4f pt2)
 struct Triangle{
     vec4f vertices[3];
     vec4f normals[3];
-    Point2 texCoords[3];
+    vec2f texCoords[3];
     Color color;
     vec4f vertex_intensity[3];
     float zbuffer;
@@ -186,7 +176,7 @@ struct Triangle{
         normals[2] = nc;
     }
 
-    void setTexCoords(Point2 uv1, Point2 uv2, Point2 uv3)
+    void setTexCoords(vec2f uv1, vec2f uv2, vec2f uv3)
     {
         texCoords[0] = uv1;
         texCoords[1] = uv2;
