@@ -15,9 +15,9 @@ float lightY = 500.0f;
 float lightZ = 0.0f;
 
 vec4f view = vec4f{0.0f, 0.0f, 1.0f};
-vec4f Ka = vec4f{0.1f, 0.2f, 0.3f};
-vec4f Kd = vec4f{0.08f, 0.2f, 0.6f};
-vec4f Ks = vec4f{0.9f, 0.1f, 0.7f};
+vec4f Ka = vec4f{1.0f, 1.0f, 1.0f};
+vec4f Kd = vec4f{0.8f, 0.8f, 0.8f};
+vec4f Ks = vec4f{0.5f, 0.5f, 0.5f};
 vec4f light = vec4f{lightX, lightY, lightZ};
 float ns = 200.0f;
 vec4f Ia = vec4f{0.3f, 0.1f, 0.1f};

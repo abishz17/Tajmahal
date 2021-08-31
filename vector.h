@@ -41,7 +41,6 @@ struct mat4f
     float matrix4[4][4];
 };
 
-//----------------------- 3D point---------------------------------------
 struct vec4f
 {
     float x, y, z, w;

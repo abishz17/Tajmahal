@@ -151,10 +151,10 @@ void Camera::processKeyboard(CameraMovement direction, float deltaTime)
         plainshade = false;
     }
 
-    // if (direction == ROTATEX)
-    // {
-    //     model->rotate(45);
-    // }
+    if (direction == ROTATEX)
+    {
+        rotatex = true;
+    }
 
 
 }
@@ -197,7 +197,7 @@ void Camera::updateCameraVectors()
     Up = (Right.crossProduct(Front)).normalize();
 }
 
-//-------------------------------- lookAt matrix ---------------------------------------------------
+//lOokat matrix//
 mat4f lookAt(vec4f eye, vec4f target, vec4f vUp = {0, 1, 0})
 {
     // Calculate new forward direction

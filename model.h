@@ -9,10 +9,8 @@
 #include "triangleRasterize.h"
 
 
-//sorting function to check depth
-void painterSort(std::vector<Triangle> &tri, float low, float high); 
 
-class Model
+class Object
 {
 private:
     std::vector<Triangle> triangles;
@@ -27,12 +25,10 @@ public:
     void updateModel(mat4f &, mat4f &);
     bool backfaceDetection(Triangle &tri);
     void draw();
-    float calculateIntensity(vec4f, vec4f, vec4f);
-
     Camera *camera;
 };
 
-void Model::draw()
+void Object::draw()
 {   
      drawObject(final_triangles);
     if(wireframe){
@@ -43,7 +39,7 @@ void Model::draw()
 }
 
 
-void Model::loadObj(std::string filename)
+void Object::loadObj(std::string filename)
 {
     std::ifstream in;
     in.open(filename, std::ifstream::in);
@@ -129,7 +125,7 @@ void Model::loadObj(std::string filename)
     final_triangles = triangles;
 }
 
-void Model::originConversion()
+void Object::originConversion()
 {
     for (int i = 0; i < triangles.size(); i++)
     {
@@ -140,7 +136,7 @@ void Model::originConversion()
     }
 }
 
-void Model::translate(vec4f pt)
+void Object::translate(vec4f pt)
 {
     for (int i = 0; i < triangles.size(); i++)
         {
@@ -151,7 +147,7 @@ void Model::translate(vec4f pt)
         }
 }
 
-void Model::scale(float pt)
+void Object::scale(float pt)
 {
     for (int i = 0; i < triangles.size(); i++)
     {
@@ -162,29 +158,29 @@ void Model::scale(float pt)
     }
 }
 
-void Model::rotate(float angle)
+void Object::rotate(float angle)
 {
     for (int i = 0; i < triangles.size(); i++)
     {
         for (int j = 0; j < 3; j++)
-        {
-            rotateX(triangles[i].vertices[j], angle);
+        {   
+            
+            // rotateX(triangles[i].vertices[j], angle);
             rotateY(triangles[i].vertices[j], angle);
-            rotateZ(triangles[i].vertices[j], angle);
+            // rotateZ(triangles[i].vertices[j], angle);
         }
     }
 }
 
-void Model::updateModel(mat4f &view, mat4f &projection)
+void Object::updateModel(mat4f &view, mat4f &projection)
 {
     final_triangles.clear();
-
     for (auto &tri : triangles)
     {
         Triangle temptri = tri;
-        temptri.vertices[0] = mul(view, tri.vertices[0]);
-        temptri.vertices[1] = mul(view, tri.vertices[1]);
-        temptri.vertices[2] = mul(view, tri.vertices[2]);
+        temptri.vertices[0] = multiply(view, tri.vertices[0]);
+        temptri.vertices[1] = multiply(view, tri.vertices[1]);
+        temptri.vertices[2] = multiply(view, tri.vertices[2]);
         bool backface = backfaceDetection(temptri);
         if(!backface)  
             continue;
@@ -204,13 +200,17 @@ void Model::updateModel(mat4f &view, mat4f &projection)
        
 
         //Projection Transformation
-        tri.vertices[0] = mul(projection, tri.vertices[0]);
-        tri.vertices[1] = mul(projection, tri.vertices[1]);
-        tri.vertices[2] = mul(projection, tri.vertices[2]);
+        tri.vertices[0] = multiply(projection, tri.vertices[0]);
+        tri.vertices[1] = multiply(projection, tri.vertices[1]);
+        tri.vertices[2] = multiply(projection, tri.vertices[2]);
+    }
+
+    if(rotatex){
+        rotate(60);
     }
 }
 
-bool Model::backfaceDetection(Triangle &tri)
+bool Object::backfaceDetection(Triangle &tri)
 {
     vec4f v1 = tri.vertices[0], v2 = tri.vertices[1], v3 = tri.vertices[2];
     vec4f centroid;
@@ -237,35 +237,6 @@ bool Model::backfaceDetection(Triangle &tri)
     return true;
 }
 
-void painterSort(std::vector<Triangle>&tri, float low, float high)  // Quick sort algo
-{
-    float i = low;
-    float j = high;
-    float pivot = tri[(i+j)/2].zbuffer;
-    Triangle temp;
-
-    while (i <= j)
-    {
-        while (tri[i].zbuffer < pivot)
-            i++;
-        while (tri[j].zbuffer > pivot)
-            j--;
-        if(i <= j)
-        {
-            temp = tri[i];
-            tri[i] = tri[j];
-            tri[j] = temp;
-            i++;
-            j--;
-        }
-        
-    }
-    if (j > low)
-        painterSort(tri,low,j);
-    if (i < high)
-        painterSort(tri, i, high);
-
-}
 
 
 

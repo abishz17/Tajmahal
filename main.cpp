@@ -5,7 +5,7 @@ float lastY = 500;
 bool mouseLeftDown = false;
 
 Camera *camera;
-Model *model;
+Object *object;
 
 float deltaTime = 0.0f;
 void processKeys(unsigned char key, float x, float y);
@@ -19,11 +19,9 @@ void updateFunction(int val);
 void myinit(int argc, char **argv)
 {
     glutInit(&argc, argv);
-    glutInitWindowSize(SCR_WIDTH, SCR_HEIGHT); //sets the width and height of the window in pixels
-    glutInitWindowPosition(0, 0);              //sets the position of the window in pixels from top left corner
+    glutInitWindowSize(SCR_WIDTH, SCR_HEIGHT); 
     glutCreateWindow("Taj Mahal");
-
-    glClearColor(0.1, 0.1, 0.1, 0.0);
+    glClearColor(0.109, 0.705, 0.729, 0.0);
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
     glLoadIdentity();
     gluOrtho2D(0, SCR_WIDTH, 0, SCR_HEIGHT);
@@ -41,8 +39,8 @@ void render()
     glClear(GL_COLOR_BUFFER_BIT);
     mat4f view = camera->getViewMatrix();
     mat4f projection = newPerspective(deg_to_rad(camera->Zoom), (float)SCR_WIDTH/ SCR_HEIGHT);
-    model->updateModel(view, projection);
-    model->draw();
+    object->updateModel(view, projection);
+    object->draw();
     glutSwapBuffers();
     glFlush(); 
     updateFunction(0);
@@ -87,14 +85,9 @@ void processKeys(unsigned char key, int x, int y)
     if (key == 'f')
         camera->processKeyboard(GOURAUD, deltaTime); //gouraudshading on
 
-     if (key == 'p')
+     if (key == 'r')
         camera->processKeyboard(ROTATEX, deltaTime);
 
-     if (key == 'o')
-        camera->processKeyboard(ROTATEY, deltaTime);
-
-    if (key == 'i')
-        camera->processKeyboard(ROTATEZ, deltaTime);
     glutPostRedisplay();
 }
 
@@ -149,15 +142,13 @@ void processMouse(int xpos, int ypos)
 int main(int argc, char **argv)
 {
     myinit(argc, argv);
-    camera = new Camera(vec4f{0.0f,0.0f,1.0f});
-    model = new Model;
-    model->loadObj("../objfiles/a1.obj");
-
-    model->camera = camera;
-    model->originConversion();
-    model->scale(0.2);
-    model->translate({80,0,0});
-
+    camera = new Camera(vec4f{0.0f,0.0f,-100.0f});
+    object = new Object;
+    object->loadObj("../objfiles/a1.obj");
+    object->camera = camera;
+    object->originConversion();
+    object->scale(0.2);
+    object->translate({80,0,0});
     glutDisplayFunc(render);
     glutKeyboardFunc(processKeys);
     glutMotionFunc(processMouse);
