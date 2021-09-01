@@ -47,7 +47,7 @@ void wireframe_draw(vec4f v1, vec4f v2, vec4f v3, Color c);
 void drawWireframe_model(std::vector<Triangle> &model);
 void draw_model(std::vector<Triangle> &model);
 
-vec4f calculateIntensity(vec4f &Ka, vec4f &Kd, vec4f &Ks, float ns, vec4f &point, vec4f &light, vec4f &view, vec4f &normal, vec4f &Ia, vec4f &Il);
+vec4f intensity(vec4f &Ka, vec4f &Kd, vec4f &Ks, float ns, vec4f &point, vec4f &light, vec4f &view, vec4f &normal, vec4f &Ia, vec4f &Il);
 
 
 
@@ -204,11 +204,6 @@ void fillBottomFlatTriangle(vec4f v1, vec4f v2, vec4f v3, Color c)
 
     for (int scanlineY = v1.y; scanlineY < v2.y - 0.5f; scanlineY++)
     {
-        // if (scanlineY == v2.y)
-        // {
-        //     std::cout << "x" << curx1 << "," << curx2 << std::endl;
-        //     std::cout << v2.y << endl;
-        // }
         BressenhamAlgo(curx1, scanlineY, curx2, scanlineY, c);
         curx1 += invslope1;
         curx2 += invslope2;
@@ -234,6 +229,19 @@ void fillTopFlatTriangle(vec4f v1, vec4f v2, vec4f v3, Color c)
     }
 }
 
+
+vec4f intensity(vec4f &Ka, vec4f &Kd, vec4f &Ks, float ns, vec4f &point, vec4f &light, vec4f &view, vec4f &normal, vec4f &Ia, vec4f &Il)
+{
+    vec4f ambientIntensity = Ka * Ia;
+    vec4f lightVec = light - point;
+    vec4f unitLight = lightVec.normalize();
+    vec4f diffuseIntensity = Kd * Il * dotProduct(normal, unitLight);
+    vec4f reflection = (normal * 2.0 * dotProduct(normal, unitLight)) - unitLight;
+    vec4f specularIntensity = Ks * Il * pow(dotProduct(view, reflection), ns);
+    vec4f intensity = ambientIntensity + diffuseIntensity + specularIntensity;
+    return intensity;
+}
+
 void wireframe_draw(vec4f v1, vec4f v2, vec4f v3, Color c)
 {
     BressenhamAlgo(v1.x, v1.y, v2.x, v2.y, c);
@@ -248,6 +256,7 @@ void drawWireframeObject(std::vector<Triangle> &model)
        wireframe_draw(model[i].vertices[0], model[i].vertices[1], model[i].vertices[2], BLACK);
     }
 }
+
 
 void drawObject(std::vector<Triangle> &model)
 {   
@@ -267,9 +276,9 @@ void drawObject(std::vector<Triangle> &model)
     
         for (int i = 0; i < model.size(); i++)
         {
-            vec4f vi0 = calculateIntensity(Ka, Kd, Ks, ns, model[i].vertices[0], light, view, model[i].normals[0], Ia, Il);
-            vec4f vi1 = calculateIntensity(Ka, Kd, Ks, ns, model[i].vertices[1], light, view, model[i].normals[1], Ia, Il);
-            vec4f vi2 = calculateIntensity(Ka, Kd, Ks, ns, model[i].vertices[2], light, view, model[i].normals[2], Ia, Il);
+            vec4f vi0 = intensity(Ka, Kd, Ks, ns, model[i].vertices[0], light, view, model[i].normals[0], Ia, Il);
+            vec4f vi1 = intensity(Ka, Kd, Ks, ns, model[i].vertices[1], light, view, model[i].normals[1], Ia, Il);
+            vec4f vi2 = intensity(Ka, Kd, Ks, ns, model[i].vertices[2], light, view, model[i].normals[2], Ia, Il);
             Vertex v1(model[i].vertices[0], model[i].normals[0], vi0);
             Vertex v2(model[i].vertices[1], model[i].normals[1], vi1);
             Vertex v3(model[i].vertices[2], model[i].normals[2], vi2);
@@ -280,16 +289,4 @@ void drawObject(std::vector<Triangle> &model)
 
     
 
-}
-
-vec4f calculateIntensity(vec4f &Ka, vec4f &Kd, vec4f &Ks, float ns, vec4f &point, vec4f &light, vec4f &view, vec4f &normal, vec4f &Ia, vec4f &Il)
-{
-    vec4f ambientColor = Ka * Ia;
-    vec4f lightVec = light - point;
-    vec4f unitLight = lightVec.normalize();
-    vec4f diffuseColor = Kd * Il * dotProduct(normal, unitLight);
-    vec4f reflection = (normal * 2.0 * dotProduct(normal, unitLight)) - unitLight;
-    vec4f specularColor = Ks * Il * pow(dotProduct(view, reflection), ns);
-    vec4f intensity = ambientColor + diffuseColor + specularColor;
-    return intensity;
 }

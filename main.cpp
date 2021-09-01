@@ -3,6 +3,7 @@
 float lastX = 800;
 float lastY = 500;
 bool mouseLeftDown = false;
+float aspectRatio = (float)SCR_WIDTH/ SCR_HEIGHT;
 
 Camera *camera;
 Object *object;
@@ -16,17 +17,6 @@ void updateFunction(int val);
 
 
 
-void myinit(int argc, char **argv)
-{
-    glutInit(&argc, argv);
-    glutInitWindowSize(SCR_WIDTH, SCR_HEIGHT); 
-    glutCreateWindow("Taj Mahal");
-    glClearColor(0.109, 0.705, 0.729, 0.0);
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-    glLoadIdentity();
-    gluOrtho2D(0, SCR_WIDTH, 0, SCR_HEIGHT);
-
-}
 
 
 void render()
@@ -37,8 +27,8 @@ void render()
     lastFrame = currentFrame;
 
     glClear(GL_COLOR_BUFFER_BIT);
-    mat4f view = camera->getViewMatrix();
-    mat4f projection = newPerspective(deg_to_rad(camera->Zoom), (float)SCR_WIDTH/ SCR_HEIGHT);
+    mat4x4 view = camera->getViewMatrix();
+    mat4x4 projection = perspectiveMatrix(converttoRad(camera->Zoom), aspectRatio);
     object->updateModel(view, projection);
     object->draw();
     glutSwapBuffers();
@@ -131,13 +121,26 @@ void processMouse(int xpos, int ypos)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float yoffset = lastY - ypos; 
 
     lastX = xpos;
     lastY = ypos;
 
     camera->processMouseMovement(xoffset, yoffset);
 }
+
+void myinit(int argc, char **argv)
+{
+    glutInit(&argc, argv);
+    glutInitWindowSize(SCR_WIDTH, SCR_HEIGHT); 
+    glutCreateWindow("Taj Mahal");
+    glClearColor(0.109, 0.705, 0.729, 0.0);
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glLoadIdentity();
+    gluOrtho2D(0, SCR_WIDTH, 0, SCR_HEIGHT);
+
+}
+
 
 int main(int argc, char **argv)
 {
@@ -147,11 +150,11 @@ int main(int argc, char **argv)
     object->loadObj("../objfiles/a1.obj");
     object->camera = camera;
     object->originConversion();
-    object->scale(0.2);
-    object->translate({80,0,0});
+    object->scaleObject(0.2);
+    object->translateObject({80,0,0});
     glutDisplayFunc(render);
     glutKeyboardFunc(processKeys);
     glutMotionFunc(processMouse);
 
-    glutMainLoop(); //loops the current event
+    glutMainLoop(); 
 }

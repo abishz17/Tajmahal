@@ -14,25 +14,25 @@ class Object
 {
 private:
     std::vector<Triangle> triangles;
-    std::vector<Triangle> final_triangles;
+    std::vector<Triangle> projectedTriangles;
 
 public:
     void loadObj(std::string);
     void originConversion();
-    void rotate(float);
-    void translate(vec4f);
-    void scale(float);
-    void updateModel(mat4f &, mat4f &);
-    bool backfaceDetection(Triangle &tri);
+    void rotateObject(float);
+    void translateObject(vec4f);
+    void scaleObject(float);
+    void updateModel(mat4x4 &, mat4x4 &);
+    bool backfaceDetection(Triangle &triangle);
     void draw();
     Camera *camera;
 };
 
 void Object::draw()
 {   
-     drawObject(final_triangles);
+     drawObject(projectedTriangles);
     if(wireframe){
-     drawWireframeObject(final_triangles);
+     drawWireframeObject(projectedTriangles);
      }
 
     
@@ -45,7 +45,7 @@ void Object::loadObj(std::string filename)
     in.open(filename, std::ifstream::in);
     if (in.fail())
     {
-        std::cout << "Cannot Read" << std::endl;
+        std::cout << "File cant be opened" << std::endl;
         exit(-1);
     }
     std::string line;
@@ -110,19 +110,15 @@ void Object::loadObj(std::string filename)
                 temp.z--; // normal
                 f.push_back(temp);
             }
-            Triangle tri;
-            tri.setVertex(verts[f[0].x], verts[f[1].x], verts[f[2].x]);
+            Triangle triangle;
+            triangle.setVertex(verts[f[0].x], verts[f[1].x], verts[f[2].x]);
             // std::cout  << f[0][0] <<'\n';
-            tri.setTexCoords(textures[f[0].y], textures[f[1].y], textures[f[2].y]);
-            tri.setNormals(normals[f[0].z], normals[f[1].z], normals[f[2].z]);
-            triangles.push_back(tri);
+            triangle.setTexCoords(textures[f[0].y], textures[f[1].y], textures[f[2].y]);
+            triangle.setNormals(normals[f[0].z], normals[f[1].z], normals[f[2].z]);
+            triangles.push_back(triangle);
         }
     }
-    for (size_t i = 0; i < triangles.size() - 1; i++)
-    {
-        triangles[i].zbuffer = (triangles[i].vertices[0].z + triangles[i].vertices[1].z + triangles[i].vertices[2].z);
-    }
-    final_triangles = triangles;
+    projectedTriangles = triangles;
 }
 
 void Object::originConversion()
@@ -136,51 +132,51 @@ void Object::originConversion()
     }
 }
 
-void Object::translate(vec4f pt)
+void Object::translateObject(vec4f pt)
 {
     for (int i = 0; i < triangles.size(); i++)
         {
             for (int j = 0; j < 3; j++)
             {
-                transate_polygon(triangles[i].vertices[j], pt); // translate the cube back to its original position
+                translate(triangles[i].vertices[j], pt); // translate the cube back to its original position
             }
         }
 }
 
-void Object::scale(float pt)
+void Object::scaleObject(float pt)
 {
     for (int i = 0; i < triangles.size(); i++)
     {
         for (int j = 0; j < 3; j++)
         {
-            scale_polygon(triangles[i].vertices[j], pt);
+            scale(triangles[i].vertices[j], pt);
         }
     }
 }
 
-void Object::rotate(float angle)
+void Object::rotateObject(float angle)
 {
     for (int i = 0; i < triangles.size(); i++)
     {
         for (int j = 0; j < 3; j++)
         {   
             
-            // rotateX(triangles[i].vertices[j], angle);
-            rotateY(triangles[i].vertices[j], angle);
-            // rotateZ(triangles[i].vertices[j], angle);
+            x_rotation(triangles[i].vertices[j], angle);
+            y_rotation(triangles[i].vertices[j], angle);
+            z_rotation(triangles[i].vertices[j], angle);
         }
     }
 }
 
-void Object::updateModel(mat4f &view, mat4f &projection)
+void Object::updateModel(mat4x4 &view, mat4x4 &projection)
 {
-    final_triangles.clear();
-    for (auto &tri : triangles)
+    projectedTriangles.clear();
+    for (auto &triangle : triangles)
     {
-        Triangle temptri = tri;
-        temptri.vertices[0] = multiply(view, tri.vertices[0]);
-        temptri.vertices[1] = multiply(view, tri.vertices[1]);
-        temptri.vertices[2] = multiply(view, tri.vertices[2]);
+        Triangle temptri = triangle;
+        temptri.vertices[0] = multiply(view, triangle.vertices[0]);
+        temptri.vertices[1] = multiply(view, triangle.vertices[1]);
+        temptri.vertices[2] = multiply(view, triangle.vertices[2]);
         bool backface = backfaceDetection(temptri);
         if(!backface)  
             continue;
@@ -188,31 +184,31 @@ void Object::updateModel(mat4f &view, mat4f &projection)
 
 
 
-    sort(final_triangles.begin(), final_triangles.end(), [](Triangle &t1, Triangle &t2)
+    sort(projectedTriangles.begin(), projectedTriangles.end(), [](Triangle &t1, Triangle &t2)
          {
              float z1 = (t1.vertices[0].z + t1.vertices[1].z + t1.vertices[2].z) / 3.0f;
              float z2 = (t2.vertices[0].z + t2.vertices[1].z + t2.vertices[2].z) / 3.0f;
              return z1>z2;
          });
 
-    for (auto &tri : final_triangles)
+    for (auto &triangle : projectedTriangles)
     {
        
 
         //Projection Transformation
-        tri.vertices[0] = multiply(projection, tri.vertices[0]);
-        tri.vertices[1] = multiply(projection, tri.vertices[1]);
-        tri.vertices[2] = multiply(projection, tri.vertices[2]);
+        triangle.vertices[0] = multiply(projection, triangle.vertices[0]);
+        triangle.vertices[1] = multiply(projection, triangle.vertices[1]);
+        triangle.vertices[2] = multiply(projection, triangle.vertices[2]);
     }
 
     if(rotatex){
-        rotate(60);
+        rotateObject(60);
     }
 }
 
-bool Object::backfaceDetection(Triangle &tri)
+bool Object::backfaceDetection(Triangle &triangle)
 {
-    vec4f v1 = tri.vertices[0], v2 = tri.vertices[1], v3 = tri.vertices[2];
+    vec4f v1 = triangle.vertices[0], v2 = triangle.vertices[1], v3 = triangle.vertices[2];
     vec4f centroid;
     centroid.x = (v1.x + v2.x + v3.x) / 3;
     centroid.y = (v1.y + v2.y + v3.y) / 3;
@@ -230,10 +226,10 @@ bool Object::backfaceDetection(Triangle &tri)
     float product = dotProduct(normal, V);
     if(product<0)
     {
-        final_triangles.push_back(tri);
+        projectedTriangles.push_back(triangle);
         return false;    
     }
-    final_triangles.push_back(tri);
+    projectedTriangles.push_back(triangle);
     return true;
 }
 

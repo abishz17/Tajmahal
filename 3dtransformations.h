@@ -2,17 +2,8 @@
 
 #include "vector.h"
 
-//transformation functions
-void transate_polygon(vec4f &pt, vec4f translate);
-void scale_polygon(vec4f &pt, vec4f scale);
-void rotateX(vec4f &pt, float angle);
-void rotateY(vec4f &pt, float angle);
-void rotateZ(vec4f &pt, float angle);
-void matrix_product(vec4f &p, float matrix[m][m]);
 
-///////////////////            3D transformation        ///////////////////
-
-void matrix_product(vec4f &p, float matrix[m][m])
+void matrixMul(vec4f &p, float matrix[m][m])
 {
     vec4f temp;
     temp.x = matrix[0][0] * p.x + matrix[0][1] * p.y + matrix[0][2] * p.z + matrix[0][3];
@@ -21,73 +12,44 @@ void matrix_product(vec4f &p, float matrix[m][m])
     p = std::move(temp);
 }
 
-void transate_polygon(vec4f &pt, vec4f translate)
+void translate(vec4f &point, vec4f translate)
 {
-    pt = pt + translate;
+    point= point+ translate;
 }
 
-void scale_polygon(vec4f &pt, float scale)
+void scale(vec4f &point, float scale)
 {
 
-    pt = pt.scaleProduct(scale);
+    point = point.scaleProduct(scale);
 }
 
-void rotateX(vec4f &pt, float angle)
+void x_rotation(vec4f &point, float angle)
 {
-    angle = deg_to_rad(angle);
-    float composite[m][m] = {{1, 0, 0, 0},
+    angle = converttoRad(angle);
+    float compositeMatrix[m][m] = {{1, 0, 0, 0},
                              {0, cos(angle), -sin(angle), 0},
                              {0, sin(angle), cos(angle), 0},
                              {0, 0, 0, 1}};
-    matrix_product(pt, composite);
+    matrixMul(point, compositeMatrix);
 }
 
-void rotateY(vec4f &pt, float angle)
+void y_rotation(vec4f &point, float angle)
 {
-    angle = deg_to_rad(angle);
-    float composite[m][m] = {{cos(angle), 0, sin(angle), 0},
+    angle = converttoRad(angle);
+    float compositeMatrix[m][m] = {{cos(angle), 0, sin(angle), 0},
                              {0, 1, 0, 0},
                              {-sin(angle),0 , cos(angle), 0},
                              {0, 0, 0, 1}};
-    matrix_product(pt, composite);
+    matrixMul(point, compositeMatrix);
 }
 
-void rotateZ(vec4f &pt, float angle)
+void z_rotation(vec4f &point, float angle)
 {
-    angle = deg_to_rad(angle);
-    float composite[m][m] = {{cos(angle), -sin(angle), 0, 0},
+    angle = converttoRad(angle);
+    float compositeMatrix[m][m] = {{cos(angle), -sin(angle), 0, 0},
                              {sin(angle), cos(angle), 0, 0},
                              {0, 0, 1, 0},
                              {0, 0, 0, 1}};
-    matrix_product(pt, composite);
+    matrixMul(point, compositeMatrix);
 }
 
-mat4f x_rotation(float pitch){
-        mat4f xrotation = {{
-            {1, 0,           0,             0},
-            {0, cos(pitch), -sin(pitch),    0},
-            {0, sin(pitch),  cos(pitch),    0},
-            {0, 0,           0,             1}
-        }};
-        return xrotation;
-    }
-
-    mat4f y_rotation(float yaw){
-        mat4f yrotation = {{
-            {cos(yaw),  0,  sin(yaw),   0},
-            {0,         1,  0,          0},
-            {-sin(yaw), 0,  cos(yaw),   0},
-            {0,         0,  0,          1}
-        }};
-        return yrotation;
-    }
-
-    mat4f z_rotation(float roll){
-        mat4f zrotation = {{
-            {cos(roll), 0,  -sin(roll), 0},
-            {sin(roll), 0,  cos(roll),  0},
-            {0,         1,  0,          0},
-            {0,         0,  0,          1}
-        }};
-        return zrotation;
-    }

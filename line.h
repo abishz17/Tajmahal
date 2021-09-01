@@ -3,12 +3,9 @@
 #include "vector.h"
 #include "colors.h"
 
-//line algorithm
 void BressenhamAlgo(int, int, Color);
 void putpixel(int, int, Color);
 int Round(float);
-
-//variables for BressenhamAlgo
 float x, y, dx, dy;
 int steps, k, ptX1, ptY1, ptX2, ptY2;
 

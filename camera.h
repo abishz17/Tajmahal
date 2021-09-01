@@ -31,7 +31,7 @@ bool plainshade = false;
 bool gouraudshade = false;
 bool rotatex = false;
 
-mat4f lookAt(vec4f eye, vec4f target, vec4f vUp);
+mat4x4 lookAt(vec4f eye, vec4f target, vec4f vUp);
 
 class Camera
 {
@@ -56,7 +56,7 @@ public:
     Camera(vec4f position = vec4f{0, 0, 0}, vec4f up = vec4f{0, 1, 0}, float yaw = YAW, float pitch = PITCH);
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
-    mat4f getViewMatrix();
+    mat4x4 getViewMatrix();
 
     void processKeyboard(CameraMovement direction, float deltaTime);
     void processMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
@@ -85,7 +85,7 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
     updateCameraVectors();
 }
 
-mat4f Camera::getViewMatrix()
+mat4x4 Camera::getViewMatrix()
 {
     return lookAt(Position, Position + Front, Up);
 }
@@ -184,11 +184,11 @@ void Camera::processMouseMovement(float xoffset, float yoffset, bool constrainPi
 void Camera::updateCameraVectors()
 {
     vec4f front;
-    float val = cos(deg_to_rad(Yaw));
+    float val = cos(converttoRad(Yaw));
     // std::cout<<val;
-    front.x = cos(deg_to_rad(Yaw)) * cos(deg_to_rad(Pitch));
-    front.y = sin(deg_to_rad(Pitch));
-    front.z = sin(deg_to_rad(Yaw)) * cos(deg_to_rad(Pitch));
+    front.x = cos(converttoRad(Yaw)) * cos(converttoRad(Pitch));
+    front.y = sin(converttoRad(Pitch));
+    front.z = sin(converttoRad(Yaw)) * cos(converttoRad(Pitch));
     
     Front = front.normalize();
 
@@ -198,7 +198,7 @@ void Camera::updateCameraVectors()
 }
 
 //lOokat matrix//
-mat4f lookAt(vec4f eye, vec4f target, vec4f vUp = {0, 1, 0})
+mat4x4 lookAt(vec4f eye, vec4f target, vec4f vUp = {0, 1, 0})
 {
     // Calculate new forward direction
     vec4f forward = (eye-target).normalize();
@@ -208,7 +208,7 @@ mat4f lookAt(vec4f eye, vec4f target, vec4f vUp = {0, 1, 0})
     vec4f up = forward.crossProduct(right);
     // vec4f c = target.inverse();
 
-    mat4f view = {{{right.x, right.y, right.z, -dotProduct(right, eye)},
+    mat4x4 view = {{{right.x, right.y, right.z, -dotProduct(right, eye)},
                    {up.x, up.y, up.z, -dotProduct(up, eye)},
                    {forward.x, forward.y, forward.z, -dotProduct(forward, eye)},
                    {0, 0, 0, 1}}};

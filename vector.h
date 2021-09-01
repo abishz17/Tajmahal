@@ -12,33 +12,24 @@
 #include "colors.h"
 // #include "line.h"
 
-// settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
-const unsigned int CUBE_HEIGHT = 500;
+const int SCR_WIDTH = 800;
+const int SCR_HEIGHT = 600;
+const int CUBE_HEIGHT = 500;
 
-//no of sides of a polygon
+//dimensions..
 const int n = 8;
-const int m = 4; //matrix size for 3D i.e 4x4
+const int m = 4; 
 
-float deg_to_rad(float degree)
-{
-    return (3.1416 * degree / 180);
-}
 
-float rad_to_deg(float radian)
-{
-    return (180 * radian) / 3.1416;
-}
 
 struct vec2f
 {  
     float x, y;
 };
 
-struct mat4f
+struct mat4x4
 {
-    float matrix4[4][4];
+    float mat[4][4];
 };
 
 struct vec4f
@@ -48,14 +39,10 @@ struct vec4f
     float yfactor = SCR_HEIGHT / 8.0f;
     float cube_height = CUBE_HEIGHT / 4.0f;
 
-    // vec4f() : x(0.0),y(0.0),z(0.0),w(1.0){}
-
     vec4f translatetoScreenOrigin()
     {
         x = (x + 1.0f) * xfactor;
         y = (y + 1.0f) * yfactor;
-        // x = (x) * xfactor;
-        // y = (y) * yfactor;
         z = (z) * cube_height;
         return {x,y,z};
     }
@@ -85,18 +72,16 @@ struct vec4f
     {
         return {float(x / div), float(y / div), float(z / div), w};
     }
-    vec4f scaleProduct(float pt)
+    vec4f scaleProduct(float v)
     {
-        return {x * pt, y * pt, z * pt, w};
+        return {x * v, y * v, z * v, w};
     }
-    vec4f crossProduct(vec4f pt)
+    vec4f crossProduct(vec4f v)
     {
         vec4f ret;
-        ret.x = y * pt.z - z * pt.y;
-        ret.y = z * pt.x - x * pt.z;
-        ret.z = x * pt.y - y * pt.x;
-        // std::cout<<ret;
-        // ret = normalize(ret);
+        ret.x = y * v.z - z * v.y;
+        ret.y = z * v.x - x * v.z;
+        ret.z = x * v.y - y * v.x;
         return ret;
     }
 
@@ -114,10 +99,7 @@ struct vec4f
     }
 };
 
-float dotProduct(vec4f pt1, vec4f pt2)
-{
-    return {pt1.x * pt2.x + pt1.y * pt2.y + pt1.z * pt2.z};
-}
+
 
 struct Triangle{
     vec4f vertices[3];
@@ -125,16 +107,16 @@ struct Triangle{
     vec2f texCoords[3];
     Color color;
     vec4f vertex_intensity[3];
-    float zbuffer;
+    
 
-    Triangle(const Triangle &tri)
+    Triangle(const Triangle &triangle)
     {
         for(int i=0;i<3;i++){
-            vertices[i] = tri.vertices[i];
-            normals[i] = tri.normals[i];
-            texCoords[i] = tri.texCoords[i];
+            vertices[i] = triangle.vertices[i];
+            normals[i] = triangle.normals[i];
+            texCoords[i] = triangle.texCoords[i];
         }
-        color = tri.color;
+        color = triangle.color;
     }
 
     Triangle()
@@ -182,8 +164,19 @@ struct Triangle{
         texCoords[2] = uv3;
 
     }
-
-    void setIntensity(std::vector<float> intense);
-    void gauravRasterize1();
-    void gauravRasterize2();
 };
+
+float dotProduct(vec4f pt1, vec4f pt2)
+{
+    return {pt1.x * pt2.x + pt1.y * pt2.y + pt1.z * pt2.z};
+}
+
+float converttoRad(float degree)
+{
+    return (3.1416 * degree / 180);
+}
+
+float convertoDeg(float radian)
+{
+    return (180 * radian) / 3.1416;
+}
