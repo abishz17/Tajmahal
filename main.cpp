@@ -11,13 +11,12 @@ Object *object;
 float deltaTime = 0.0f;
 void processKeys(unsigned char key, float x, float y);
 void processMouse(int xpos, int ypos);
-void updateFunction(int val);
-
-
-
-
-
-
+void refresh(int val)
+{
+    int fps = 200;
+    glutPostRedisplay();
+    glutTimerFunc(1000 / fps, refresh, 0);
+}
 
 void render()
 {
@@ -33,16 +32,11 @@ void render()
     object->draw();
     glutSwapBuffers();
     glFlush(); 
-    updateFunction(0);
+    refresh(0);
 
 }
 
-void updateFunction(int val)
-{
-    int fps = 200;
-    glutPostRedisplay();
-    glutTimerFunc(1000 / fps, updateFunction, 0);
-}
+
 
 
 void processKeys(unsigned char key, int x, int y)
