@@ -183,7 +183,7 @@ void Object::updateModel(mat4x4 &view, mat4x4 &projection)
     }
 
 
-
+//painters sort////
     sort(projectedTriangles.begin(), projectedTriangles.end(), [](Triangle &t1, Triangle &t2)
          {
              float z1 = (t1.vertices[0].z + t1.vertices[1].z + t1.vertices[2].z) / 3.0f;

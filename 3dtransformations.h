@@ -5,11 +5,11 @@
 
 void matrixMul(vec4f &p, float matrix[m][m])
 {
-    vec4f temp;
-    temp.x = matrix[0][0] * p.x + matrix[0][1] * p.y + matrix[0][2] * p.z + matrix[0][3];
-    temp.y = matrix[1][0] * p.x + matrix[1][1] * p.y + matrix[1][2] * p.z + matrix[1][3];
-    temp.z = matrix[2][0] * p.x + matrix[2][1] * p.y + matrix[2][2] * p.z + matrix[2][3];
-    p = std::move(temp);
+    vec4f dummy;
+    dummy.x = matrix[0][0] * p.x + matrix[0][1] * p.y + matrix[0][2] * p.z + matrix[0][3];
+    dummy.y = matrix[1][0] * p.x + matrix[1][1] * p.y + matrix[1][2] * p.z + matrix[1][3];
+    dummy.z = matrix[2][0] * p.x + matrix[2][1] * p.y + matrix[2][2] * p.z + matrix[2][3];
+    p = std::move(dummy);
 }
 
 void translate(vec4f &point, vec4f translate)
